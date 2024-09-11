@@ -2,27 +2,12 @@ import pickle
 import streamlit as st
 import pandas as pd
 import io
-# from nltk import Tree
-# import spacy
-# import benepar
-
-# Load the pickle file
-pickle_file_path = 'debate_analysis_data0-30WithRef.pkl'
-with open(pickle_file_path, 'rb') as file:
-    data = pickle.load(file)
-
-# Convert the data to a DataFrame (assuming it's compatible)
-df = pd.DataFrame(data)
+from nltk import Tree
+import spacy
+import benepar
 
 # Load the Spacy model with benepar
 # nlp = spacy.load("en_core_web_md")
-# Check if the benepar model is available, if not, download it
-# try:
-#     benepar.download('benepar_en3')
-# except Exception as e:
-#     subprocess.run(["python", "-m", "benepar", "download", "benepar_en3"])
-
-# Add benepar to the pipeline
 # nlp.add_pipe("benepar", config={"model": "benepar_en3"})
 
 # syntactic_categories = {
@@ -165,44 +150,18 @@ df = pd.DataFrame(data)
 #     st.write("##### Syntactic Categories and Phrases")
 #     st.dataframe(df)
 
+# Load the pickle file
+pickle_file_path = 'September_10_2024_debate.pkl'
+with open(pickle_file_path, 'rb') as file:
+    data = pickle.load(file)
 
-# Define topic mapping
-topic_mapping = {
-    'economy': 'Economy',
-    'economic': 'Economy',
-    'abortion': 'Abortion',
-    'rights': 'Rights',
-    'tax': 'Taxes',
-    'covid': 'COVID-19',
-    'health': 'Healthcare',
-    'immigration': 'Immigration',
-    'jobs': 'Employment/Unemployment',
-    'employment': 'Employment/Unemployment',
-    'unemployment': 'Employment/Unemployment',
-    'foreign policy': 'Foreign Policy'
-}
+# Convert the data to a DataFrame (assuming it's compatible)
+df = pd.DataFrame(data)
 
-# Function to map topics
-def map_topics(topics_list):
-    mapped_topics = set()  # Use a set to avoid duplicate mappings
-    for topic in topics_list:
-        topic_lower = topic.lower()
-        for keyword, category in topic_mapping.items():
-            if keyword in topic_lower:
-                mapped_topics.add(category)
-    return list(mapped_topics)
+# Filter data for specific speakers (Trump and Harris)
+filtered_data = df[df['speaker'].isin(['Donald Trump', 'Kamala Harris'])]
 
-# Filter data for specific speakers (Trump and Biden)
-filtered_data = df[df['speaker'].isin(['Donald Trump', 'Joe Biden'])]
 
-# Apply mapping to topics
-filtered_data['mapped_topics'] = filtered_data['topics'].apply(map_topics)
-
-# Flatten topics for easy grouping
-topics_exploded = filtered_data.explode('mapped_topics')
-
-# Group by topic and count occurrences
-grouped_topics = topics_exploded.groupby('mapped_topics').size().reset_index(name='count')
 
 # Function to clean and combine text and track impacted groups and turn numbers
 def clean_and_combine_text(facts_list, policy_list, value_list, impacted_groups_facts, impacted_groups_policy,
@@ -296,13 +255,62 @@ def display_epl_explanations(row, selected_claim_idx):
     st.write(f"- Deliberative Thinking: {clean_explanation(row.get('system2_explanation', [''])[selected_claim_idx])}")
 
 def show():
-    st.title("Debate Topics Grouping")
+    st.title("Phases")
+
+    # Ensure the dataset is group by topics
+    if 'Phase' not in df.columns:
+        st.error("The 'Phase' field is missing in the dataset.")
+        return
+
+    # Group by 'Phase' and count occurrences (if needed)
+    grouped_phases = df.groupby('Phase').size().reset_index(name='count')
+
+    # Dropdown for selecting a phase
+    phase_list = grouped_phases['Phase'].unique()
+    selected_phase = st.selectbox('Select a Phase:', phase_list)
+
+    # Filter the data based on the selected phase
+    filtered_data_by_phase = df[df['Phase'] == selected_phase]
+    speakers = filtered_data_by_phase['speaker'].unique()
+    grouped_by_speaker = filtered_data_by_phase.groupby('speaker')
+
+    # Sort the filtered data by turn numbers
+    sorted_phase_data = filtered_data_by_phase.sort_values(by='turn')
+
+    for speaker, speaker_data in grouped_by_speaker:
+        st.write(f"### Speaker: {speaker}")
+
+        # Sort the speaker data by turn number
+        sorted_speaker_data = speaker_data.sort_values(by='turn')
+
+        # Display the selected phase content with proper numbering
+        for idx, row in sorted_speaker_data.iterrows():
+            turn_number = row['turn']
+            content = row['content']
+            st.markdown(f"**{selected_phase} {idx + 1}** | **Turn {turn_number}**: {content}")
+
+        st.write("---")
+
+    st.write("---")
+
+    st.title("Topics")
+
+    # Ensure the dataset is grouped by topics
+    if 'Topic' not in df.columns:
+        st.error("The 'Topic' field is missing in the dataset.")
+        return
+
+    # Group by 'Topic' and count occurrences
+    grouped_topics = df.groupby('Topic').size().reset_index(name='count')
 
     # Dropdown for selecting topic category
-    selected_topic = st.selectbox(
-        'Select a Topic Category:',
-        grouped_topics['mapped_topics'].unique()
-    )
+    if grouped_topics.empty:
+        st.warning("No topics found in the dataset.")
+        return
+
+    topic_list = grouped_topics['Topic'].unique()
+    selected_topic = st.selectbox('Select a Topic:', topic_list)
+
 
     # Second dropdown for claims and arguments
     selected_option = st.selectbox(
@@ -363,7 +371,7 @@ def show():
         ]
 
         claims_data = filtered_data[
-            (filtered_data['mapped_topics'].apply(lambda x: selected_topic in x)) &
+            (filtered_data['Topic'].apply(lambda x: selected_topic in x)) &
             (filtered_data[claim_columns].notnull().any(axis=1))
             ][['speaker'] + claim_columns]
 
@@ -496,7 +504,7 @@ def show():
         ]
 
         arguments_data = filtered_data[
-            (filtered_data['mapped_topics'].apply(lambda x: selected_topic in x)) &
+            (filtered_data['Topic'].apply(lambda x: selected_topic in x)) &
             (filtered_data[argument_columns].notnull().any(axis=1))
             ][['speaker'] + argument_columns]
 
@@ -581,7 +589,7 @@ def show():
             # st.write("#### Parsed Tree:")
             # display_parse_tree(parsed_tree)
             # display_syntactic_table(parsed_tree)
-            # st.write("---")
+            st.write("---")
 
 if __name__ == '__main__':
     show()
