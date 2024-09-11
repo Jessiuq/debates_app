@@ -3,42 +3,57 @@ import streamlit as st
 import pandas as pd
 
 # Load the pickle file
-pickle_file_path = 'debate_analysis_data0-30WithRef.pkl'
+pickle_file_path = 'September_10_2024_debate.pkl'
 with open(pickle_file_path, 'rb') as file:
     data = pickle.load(file)
 
 # Convert the data to a DataFrame (assuming it's compatible)
 df = pd.DataFrame(data)
 
-# Calculate average words per minute (WPM)
-df['word_count'] = df['content'].apply(lambda x: len(x.split()))  # Calculate word count per turn
-df['duration_minutes'] = (df['endTime'] - df['startTime']) / 60  # Duration in minutes
-df['words_per_minute'] = df['word_count'] / df['duration_minutes']
+def calculate_speaking_rates(df):
+    # Calculate words per minute for each turn
+    df['duration'] = df['endTime'] - df['startTime']
+    df['words_per_minute'] = df['word_weight'] / df['duration'] * 60
 
-avg_wpm = df.groupby('speaker')['words_per_minute'].mean()
+    # Calculate claims per turn
+    df['claims_per_turn'] = df[['claim_of_facts_extractive_supporting_quotes_claim',
+                                'claim_of_value_extractive_supporting_quotes_claim',
+                                'claim_of_policy_extractive_supporting_quotes_claim']].apply(lambda row: sum([bool(claim) for claim in row]), axis=1)
 
-# Calculate average claims per turn using extractive supporting quotes
-claim_cols_extractive = ['claim_of_facts_extractive_supporting_quotes_claim',
-                         'claim_of_value_extractive_supporting_quotes_claim',
-                         'claim_of_policy_extractive_supporting_quotes_claim']
-df['total_claims'] = df[claim_cols_extractive].apply(lambda row: sum([len(x) for x in row if isinstance(x, list)]), axis=1)  # Count number of extractive claims
-avg_claims_per_turn = df['total_claims'].mean()
+    argument_columns = [
+        'claim_of_facts_extractive_supporting_quotes_argument',
+        'claim_of_value_extractive_supporting_quotes_argument',
+        'claim_of_policy_extractive_supporting_quotes_argument'
+    ]
 
-# # Calculate average arguments per topic using extractive supporting quotes
-# argument_cols_extractive = ['claim_of_facts_extractive_supporting_quotes_argument',
-#                             'claim_of_value_extractive_supporting_quotes_argument',
-#                             'claim_of_policy_extractive_supporting_quotes_argument']
-# df['total_arguments'] = df[argument_cols_extractive].apply(lambda row: sum([len(x) for x in row if isinstance(x, list)]), axis=1)  # Count number of extractive arguments
-# avg_arguments_per_topic = df.groupby('topics')['total_arguments'].mean()
-#
-# df['flattened_topics'] = df['topics'].apply(lambda x: ', '.join(x) if isinstance(x, list) else x)
-# avg_arguments_per_topic = df.groupby('flattened_topics')['total_arguments'].mean()
+    # Filter out columns that exist in the DataFrame
+    available_argument_columns = [col for col in argument_columns if col in df.columns]
+
+    # If argument columns exist, count the number of arguments for each row
+    if available_argument_columns:
+        df['argument_count'] = df[available_argument_columns].apply(lambda row: sum([bool(arg) for arg in row]), axis=1)
+    else:
+        df['argument_count'] = 0  # Default to 0 arguments if columns aren't found
+
+    # Group by 'Topic' and 'speaker', then calculate the average number of arguments per topic
+    grouped_df = df.groupby(['Topic', 'speaker']).agg(
+        avg_arguments_per_topic=('argument_count', 'mean')
+    ).reset_index()
+
+    # Merge the calculated 'avg_arguments_per_topic' back into the original DataFrame for the speaker
+    df = pd.merge(df, grouped_df[['Topic', 'speaker', 'avg_arguments_per_topic']], on=['Topic', 'speaker'], how='left')
+
+    return df
+
 
 def show():
     st.write("### Overview of the Debate")
 
     # Extract the unique speakers from the dataset
     speakers = df['speaker'].unique()
+    exclude_speakers = ["Narrator"]
+    filtered_speakers = [speaker for speaker in speakers if speaker not in exclude_speakers]
+
 
     # Dictionary of public figures and their bios
     figures = {
@@ -54,7 +69,7 @@ def show():
             4) Trump co-wrote The Art of the Deal in 1987, which became a bestseller and is often seen as a reflection of his business philosophy and style.
 
             """,
-        "Joe Biden": """
+        "Kamala Harris": """
             **Birthday:** October 20, 1964 (age 59 years)\n
             **Hometown:** Oakland, CA\n
             **Career Bio:** Kamala Harris is the 49th vice president of the United States and the first woman, first Black woman, and first person of South Asian descent to hold the office. Before becoming vice president, Harris built a prominent career in law and politics. She began as a prosecutor in California, eventually becoming the District Attorney of San Francisco in 2003. Known for her focus on criminal justice reform, she later served as California's Attorney General from 2011 to 2017, where she worked on issues like consumer protection, reducing truancy, and advancing LGBTQ+ rights.\n\n
@@ -66,7 +81,7 @@ def show():
             4) In addition to her political work, Harris has written multiple books, including The Truths We Hold: An American Journey, and a children’s book, Superheroes Are Everywhere, which shares inspiring stories from her life.
             
             """,
-        "Jake Tapper": """
+        "David Muir": """
             **Birthday:** November 8, 1973 (age 50 years)\n
             **Hometown:** Syracuse, NY\n
             **Career Bio:** David Muir is a prominent American journalist and the anchor of ABC World News Tonight, one of the most-watched evening news programs in the United States. Born in 1973, Muir began his career in journalism as a local news reporter and anchor, quickly gaining recognition for his work. He joined ABC News in 2003 as a correspondent and became a regular fixture on the network, reporting from global hotspots and covering major stories such as Hurricane Katrina, the Haiti earthquake, and the Arab Spring. His award-winning reporting helped him rise through the ranks, leading to his appointment as the anchor of ABC's flagship news program in 2014.\n\n
@@ -78,7 +93,7 @@ def show():
             4) Muir is known to prioritize fitness despite his demanding schedule. He has been seen running in Central Park and often makes time for workouts to stay healthy and energized for his busy career.
 
             """,
-        "Dana Bash": """
+        "Linsey Davis": """
             **Birthday:** October 21, 1977 (age 46 years)\n
             **Hometown:** South Jersey, NJ\n
             **Career Bio:** Linsey Davis is an accomplished American journalist, currently serving as an anchor for ABC News Live Prime and weekend anchor for World News Tonight. She is also a correspondent for major ABC programs like Good Morning America and 20/20. Davis began her journalism career in local news, working as a reporter at several TV stations before joining ABC News in 2007. Since then, she has covered significant national and international events, including presidential elections, mass shootings, and natural disasters.\n\n 
@@ -87,13 +102,13 @@ def show():
             1) In addition to her journalism career, she is also a bestselling author of children’s books, such as The World is Awake and One Big Heart, which focus on positivity and inclusion.
             2) In her earlier years, Davis was a track and field star, excelling in sprinting events. Her athletic background instilled a strong sense of discipline and perseverance that she carries into her journalism career.
             3) Davis has won several Emmy Awards for her outstanding journalism and coverage of significant events, including her reporting on major national stories and in-depth investigative pieces.
-            4) Linsey Davis has spoken openly about how her Christian faith plays a significant role in her life and career. Her book One Big Heart was inspired by her faith and the belief in celebrating everyone’s uniqueness.
+            4) Lindsey Davis has spoken openly about how her Christian faith plays a significant role in her life and career. Her book One Big Heart was inspired by her faith and the belief in celebrating everyone’s uniqueness.
 
             """
     }
 
     # Create a dropdown to select a speaker
-    selected_speaker = st.selectbox('Select a Speaker', speakers)
+    selected_speaker = st.selectbox('Select a Speaker', filtered_speakers)
 
     # Check if the selected speaker is in the figures dictionary, and display the bio if it exists
     if selected_speaker in figures:
@@ -102,18 +117,17 @@ def show():
     else:
         st.write(f"No detailed biography available for {selected_speaker}")
 
-    st.write("#### Speaking Rates")
-    # Display Average WPM for the selected speaker
-    if selected_speaker in avg_wpm.index:
-        st.write(f"**Average Words per Minute for {selected_speaker}:** {avg_wpm[selected_speaker]:.2f}")
+    # Display speaking rates
+    speaker_df = df[df['speaker'] == selected_speaker]
+    speaker_rates_df = calculate_speaking_rates(speaker_df)
+    st.write(f"#### Speaking Rates for {selected_speaker}")
+    avg_words_per_minute = speaker_rates_df['words_per_minute'].mean()
+    avg_claims_per_turn = speaker_rates_df['claims_per_turn'].mean()
+    avg_arguments_per_topic = speaker_rates_df['avg_arguments_per_topic'].mean()
 
-    # Display overall Average Claims per Turn
-    st.write(f"**Average Claims per Turn (using extractive supporting quotes):** {avg_claims_per_turn:.2f}")
-
-    # Display Average Arguments per Topic
-    # st.write("**Average Arguments per Topic (using extractive supporting quotes):**")
-    # st.write(avg_arguments_per_topic)
-
+    st.write(f"**Average Words per Minute**: {avg_words_per_minute:.2f}")
+    st.write(f"**Average Claims per Turn**: {avg_claims_per_turn:.2f}")
+    st.write(f"**Average Arguments per Topic**: {avg_arguments_per_topic:.2f}")
 # Call the function in your Streamlit app
 if __name__ == "__main__":
     show()
