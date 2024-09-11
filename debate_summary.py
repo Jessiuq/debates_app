@@ -3,7 +3,7 @@ import streamlit as st
 import pandas as pd
 
 # Load the pickle file
-pickle_file_path = r'C:\Users\jesei\PycharmProjects\pythonProject\debate_analysis_data0-30WithRef.pkl'
+pickle_file_path = 'debate_analysis_data0-30WithRef.pkl'
 with open(pickle_file_path, 'rb') as file:
     data = pickle.load(file)
 
