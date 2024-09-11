@@ -2,9 +2,9 @@ import pickle
 import streamlit as st
 import pandas as pd
 import io
-from nltk import Tree
-import spacy
-import benepar
+# from nltk import Tree
+# import spacy
+# import benepar
 
 # Load the pickle file
 pickle_file_path = 'debate_analysis_data0-30WithRef.pkl'
@@ -15,155 +15,155 @@ with open(pickle_file_path, 'rb') as file:
 df = pd.DataFrame(data)
 
 # Load the Spacy model with benepar
-nlp = spacy.load("en_core_web_md")
+# nlp = spacy.load("en_core_web_md")
 # Check if the benepar model is available, if not, download it
-try:
-    benepar.download('benepar_en3')
-except Exception as e:
-    subprocess.run(["python", "-m", "benepar", "download", "benepar_en3"])
+# try:
+#     benepar.download('benepar_en3')
+# except Exception as e:
+#     subprocess.run(["python", "-m", "benepar", "download", "benepar_en3"])
 
 # Add benepar to the pipeline
-nlp.add_pipe("benepar", config={"model": "benepar_en3"})
+# nlp.add_pipe("benepar", config={"model": "benepar_en3"})
 
-syntactic_categories = {
-    "S": "Sentence",
-    "NP": "Noun Phrase",
-    "VP": "Verb Phrase",
-    "PP": "Prepositional Phrase",
-    "ADJP": "Adjective Phrase",
-    "ADVP": "Adverb Phrase",
-    "SBAR": "Subordinate Clause",
-    "SBARQ": "Question introduced by a wh-word or wh-phrase",
-    "SINV": "Inverted Declarative Sentence",
-    "SQ": "Inverted Yes/No Question",
-    "WHNP": "Wh-Noun Phrase",
-    "WHADJP": "Wh-Adjective Phrase",
-    "WHADVP": "Wh-Adverb Phrase",
-    "WHPP": "Wh-Prepositional Phrase",
-    "CC": "Coordinating Conjunction",
-    "DT": "Determiner",
-    "JJ": "Adjective",
-    "JJR": "Adjective, Comparative",
-    "JJS": "Adjective, Superlative",
-    "NN": "Noun, Singular or Mass",
-    "NNS": "Noun, Plural",
-    "NNP": "Proper Noun, Singular",
-    "NNPS": "Proper Noun, Plural",
-    "PRP": "Pronoun, Personal",
-    "PRP$": "Pronoun, Possessive",
-    "RB": "Adverb",
-    "RBR": "Adverb, Comparative",
-    "RBS": "Adverb, Superlative",
-    "VB": "Verb, Base Form",
-    "VBD": "Verb, Past Tense",
-    "VBG": "Verb, Gerund or Present Participle",
-    "VBN": "Verb, Past Participle",
-    "VBP": "Verb, Non-3rd Person Singular Present",
-    "VBZ": "Verb, 3rd Person Singular Present",
-    "IN": "Preposition or Subordinating Conjunction",
-    "MD": "Modal",
-    "CD": "Cardinal Number",
-    "EX": "Existential There",
-    "FW": "Foreign Word",
-    "LS": "List Item Marker",
-    "PDT": "Predeterminer",
-    "POS": "Possessive Ending",
-    "RP": "Particle",
-    "SYM": "Symbol",
-    "TO": "To",
-    "UH": "Interjection",
-    "WDT": "Wh-Determiner",
-    "WP": "Wh-Pronoun",
-    "WP$": "Wh-Possessive Pronoun",
-    "WRB": "Wh-Adverb",
-    ".": "Sentence-final punctuation (period, question mark, exclamation mark)",
-    ",": "Comma",
-    ":": "Colon or ellipsis",
-    "-LRB-": "Left round bracket",
-    "-RRB-": "Right round bracket",
-    "`": "Opening quotation mark",
-    "''": "Closing quotation mark",
-    "#": "Number sign",
-    "$": "Dollar sign",
-    "HYPH": "Hyphen",
-    "NFP": "Non-final punctuation",
-    "SQ": "Inverted Yes/No Question",
-    "SBARQ": "Question introduced by a wh-word or wh-phrase",
-    "FRAG": "Fragment",
-    "INTJ": "Interjection",
-    "LST": "List marker",
-    "NAC": "Not a Constituent",
-    "NX": "Head of a complex noun phrase",
-    "PRN": "Parenthetical",
-    "PRT": "Particle",
-    "QP": "Quantifier Phrase",
-    "RRC": "Reduced Relative Clause",
-    "UCP": "Unlike Coordinated Phrase",
-    "X": "Unknown or unclassified",
-    "SINV": "Inverted Declarative Sentence",
-    "NX": "Complex Noun Phrase (inside an NP)",
-    "CONJP": "Conjunction Phrase (e.g., 'either/or')",
-    "LST": "List Marker (used in listings)",
-    "PRN": "Parenthetical",
-    "RRC": "Reduced Relative Clause",
-    "X": "Unknown or Unclassified Constituent",
-    "ROOT": "Root of the parse tree",
-    "TOP": "Top node of a parse tree",
-    "WHPP": "Wh-Prepositional Phrase",
-    "NX": "Complex Noun Phrase",
-    "TYPO": "Typo",
-    "EDITED": "Edited",
-    "META": "Meta Statement (e.g., 'I'd say...')",
-    "CODE": "Code",
-    "EMBED": "Embedded Sentence (used for embedding other categories)",
-    "NML": "Noun Phrase without Det/Quantifier",
-    "PDT": "Pre-determiner (e.g., 'both', 'all')",
-    "INTJ": "Interjection (e.g., 'oh', 'wow')",
-    "LST": "List item marker (e.g., '1.', 'a.')",
-    "NAC": "Not a Constituent",
-    "NML": "Nominal Modifier",
-    "NP-TMP": "Temporal Noun Phrase",
-    "RRC": "Reduced Relative Clause",
-    "UCP": "Unlike Coordinated Phrase",
-    "VP-TTL": "Title Verb Phrase",
-    "XS": "Unknown Syntactic Category",
-}
+# syntactic_categories = {
+#     "S": "Sentence",
+#     "NP": "Noun Phrase",
+#     "VP": "Verb Phrase",
+#     "PP": "Prepositional Phrase",
+#     "ADJP": "Adjective Phrase",
+#     "ADVP": "Adverb Phrase",
+#     "SBAR": "Subordinate Clause",
+#     "SBARQ": "Question introduced by a wh-word or wh-phrase",
+#     "SINV": "Inverted Declarative Sentence",
+#     "SQ": "Inverted Yes/No Question",
+#     "WHNP": "Wh-Noun Phrase",
+#     "WHADJP": "Wh-Adjective Phrase",
+#     "WHADVP": "Wh-Adverb Phrase",
+#     "WHPP": "Wh-Prepositional Phrase",
+#     "CC": "Coordinating Conjunction",
+#     "DT": "Determiner",
+#     "JJ": "Adjective",
+#     "JJR": "Adjective, Comparative",
+#     "JJS": "Adjective, Superlative",
+#     "NN": "Noun, Singular or Mass",
+#     "NNS": "Noun, Plural",
+#     "NNP": "Proper Noun, Singular",
+#     "NNPS": "Proper Noun, Plural",
+#     "PRP": "Pronoun, Personal",
+#     "PRP$": "Pronoun, Possessive",
+#     "RB": "Adverb",
+#     "RBR": "Adverb, Comparative",
+#     "RBS": "Adverb, Superlative",
+#     "VB": "Verb, Base Form",
+#     "VBD": "Verb, Past Tense",
+#     "VBG": "Verb, Gerund or Present Participle",
+#     "VBN": "Verb, Past Participle",
+#     "VBP": "Verb, Non-3rd Person Singular Present",
+#     "VBZ": "Verb, 3rd Person Singular Present",
+#     "IN": "Preposition or Subordinating Conjunction",
+#     "MD": "Modal",
+#     "CD": "Cardinal Number",
+#     "EX": "Existential There",
+#     "FW": "Foreign Word",
+#     "LS": "List Item Marker",
+#     "PDT": "Predeterminer",
+#     "POS": "Possessive Ending",
+#     "RP": "Particle",
+#     "SYM": "Symbol",
+#     "TO": "To",
+#     "UH": "Interjection",
+#     "WDT": "Wh-Determiner",
+#     "WP": "Wh-Pronoun",
+#     "WP$": "Wh-Possessive Pronoun",
+#     "WRB": "Wh-Adverb",
+#     ".": "Sentence-final punctuation (period, question mark, exclamation mark)",
+#     ",": "Comma",
+#     ":": "Colon or ellipsis",
+#     "-LRB-": "Left round bracket",
+#     "-RRB-": "Right round bracket",
+#     "`": "Opening quotation mark",
+#     "''": "Closing quotation mark",
+#     "#": "Number sign",
+#     "$": "Dollar sign",
+#     "HYPH": "Hyphen",
+#     "NFP": "Non-final punctuation",
+#     "SQ": "Inverted Yes/No Question",
+#     "SBARQ": "Question introduced by a wh-word or wh-phrase",
+#     "FRAG": "Fragment",
+#     "INTJ": "Interjection",
+#     "LST": "List marker",
+#     "NAC": "Not a Constituent",
+#     "NX": "Head of a complex noun phrase",
+#     "PRN": "Parenthetical",
+#     "PRT": "Particle",
+#     "QP": "Quantifier Phrase",
+#     "RRC": "Reduced Relative Clause",
+#     "UCP": "Unlike Coordinated Phrase",
+#     "X": "Unknown or unclassified",
+#     "SINV": "Inverted Declarative Sentence",
+#     "NX": "Complex Noun Phrase (inside an NP)",
+#     "CONJP": "Conjunction Phrase (e.g., 'either/or')",
+#     "LST": "List Marker (used in listings)",
+#     "PRN": "Parenthetical",
+#     "RRC": "Reduced Relative Clause",
+#     "X": "Unknown or Unclassified Constituent",
+#     "ROOT": "Root of the parse tree",
+#     "TOP": "Top node of a parse tree",
+#     "WHPP": "Wh-Prepositional Phrase",
+#     "NX": "Complex Noun Phrase",
+#     "TYPO": "Typo",
+#     "EDITED": "Edited",
+#     "META": "Meta Statement (e.g., 'I'd say...')",
+#     "CODE": "Code",
+#     "EMBED": "Embedded Sentence (used for embedding other categories)",
+#     "NML": "Noun Phrase without Det/Quantifier",
+#     "PDT": "Pre-determiner (e.g., 'both', 'all')",
+#     "INTJ": "Interjection (e.g., 'oh', 'wow')",
+#     "LST": "List item marker (e.g., '1.', 'a.')",
+#     "NAC": "Not a Constituent",
+#     "NML": "Nominal Modifier",
+#     "NP-TMP": "Temporal Noun Phrase",
+#     "RRC": "Reduced Relative Clause",
+#     "UCP": "Unlike Coordinated Phrase",
+#     "VP-TTL": "Title Verb Phrase",
+#     "XS": "Unknown Syntactic Category",
+# }
 
-def pretty_print_tree(parse_tree):
-    output = io.StringIO()
-    parse_tree.pretty_print(stream=output)
-    return output.getvalue()
+# def pretty_print_tree(parse_tree):
+#     output = io.StringIO()
+#     parse_tree.pretty_print(stream=output)
+#     return output.getvalue()
 
-# Function to parse a sentence and return a tree structure
-def parse_sentence(sentence):
-    doc = nlp(sentence)
-    sent = list(doc.sents)[0]  # Assuming we're dealing with a single sentence
-    tree = sent._.parse_string
-    return tree
+# # Function to parse a sentence and return a tree structure
+# def parse_sentence(sentence):
+#     doc = nlp(sentence)
+#     sent = list(doc.sents)[0]  # Assuming we're dealing with a single sentence
+#     tree = sent._.parse_string
+#     return tree
 
-def display_parse_tree(tree_str):
-    tree = Tree.fromstring(tree_str)
-    st.text(pretty_print_tree(tree))
+# def display_parse_tree(tree_str):
+#     tree = Tree.fromstring(tree_str)
+#     st.text(pretty_print_tree(tree))
 
-def extract_syntactic_categories(tree_str):
-    """Extract syntactic categories and their corresponding words from a parse tree."""
-    tree = Tree.fromstring(tree_str)
-    extracted = []
+# def extract_syntactic_categories(tree_str):
+#     """Extract syntactic categories and their corresponding words from a parse tree."""
+#     tree = Tree.fromstring(tree_str)
+#     extracted = []
 
-    for subtree in tree.subtrees():
-        label = subtree.label()
-        words = " ".join(subtree.leaves())
-        full_category = syntactic_categories.get(label, label)  # Get friendly name if available
-        extracted.append((f"{label} ({full_category})", words))
+#     for subtree in tree.subtrees():
+#         label = subtree.label()
+#         words = " ".join(subtree.leaves())
+#         full_category = syntactic_categories.get(label, label)  # Get friendly name if available
+#         extracted.append((f"{label} ({full_category})", words))
 
-    return extracted
+#     return extracted
 
-# Function to display the syntactic categories in a table
-def display_syntactic_table(tree_str):
-    categories = extract_syntactic_categories(tree_str)
-    df = pd.DataFrame(categories, columns=["Syntactic Category (Label and Full Name)", "Words"])
-    st.write("##### Syntactic Categories and Phrases")
-    st.dataframe(df)
+# # Function to display the syntactic categories in a table
+# def display_syntactic_table(tree_str):
+#     categories = extract_syntactic_categories(tree_str)
+#     df = pd.DataFrame(categories, columns=["Syntactic Category (Label and Full Name)", "Words"])
+#     st.write("##### Syntactic Categories and Phrases")
+#     st.dataframe(df)
 
 
 # Define topic mapping
@@ -444,10 +444,10 @@ def show():
             st.write(f"**Turn Number**: {turn_numbers[selected_claim_idx]}")
             display_impacted_groups(impacted_groups[selected_claim_idx])
             display_epl_explanations(row, selected_claim_idx)
-            parsed_tree = parse_sentence(combined_claims[selected_claim_idx])
-            st.write("#### Parsed Tree:")
-            display_parse_tree(parsed_tree)
-            display_syntactic_table(parsed_tree)
+            # parsed_tree = parse_sentence(combined_claims[selected_claim_idx])
+            # st.write("#### Parsed Tree:")
+            # display_parse_tree(parsed_tree)
+            # display_syntactic_table(parsed_tree)
             st.write("---")
 
     # Process Arguments section (similar logic to Claims)
@@ -577,11 +577,11 @@ def show():
             st.write(f"**Turn Number**: {turn_numbers[selected_argument_idx]}")
             display_impacted_groups(impacted_groups[selected_argument_idx])
             display_epl_explanations(row, selected_argument_idx)
-            parsed_tree = parse_sentence(combined_arguments[selected_argument_idx])
-            st.write("#### Parsed Tree:")
-            display_parse_tree(parsed_tree)
-            display_syntactic_table(parsed_tree)
-            st.write("---")
+            # parsed_tree = parse_sentence(combined_arguments[selected_argument_idx])
+            # st.write("#### Parsed Tree:")
+            # display_parse_tree(parsed_tree)
+            # display_syntactic_table(parsed_tree)
+            # st.write("---")
 
 if __name__ == '__main__':
     show()
