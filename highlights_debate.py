@@ -16,6 +16,13 @@ df = pd.DataFrame(data)
 
 # Load the Spacy model with benepar
 nlp = spacy.load("en_core_web_md")
+# Check if the benepar model is available, if not, download it
+try:
+    benepar.download('benepar_en3')
+except Exception as e:
+    subprocess.run(["python", "-m", "benepar", "download", "benepar_en3"])
+
+# Add benepar to the pipeline
 nlp.add_pipe("benepar", config={"model": "benepar_en3"})
 
 syntactic_categories = {
