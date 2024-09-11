@@ -8,7 +8,7 @@ import re
 
 
 # Load the pickle file
-pickle_file_path = 'debate_analysis_data0-30WithRef.pkl'
+pickle_file_path = 'September_10_2024_debate.pkl'
 with open(pickle_file_path, 'rb') as file:
     data = pickle.load(file)
 
@@ -38,31 +38,7 @@ def split_into_paragraphs(content):
             paragraph = ""
     return paragraphs
 
-def categorize_section(content):
-    content_lower = content.lower()  # Normalize to lowercase for easier pattern matching
 
-    if '?' in content_lower:
-        return "Question"
-    if 'i agree' in content_lower:
-        return "Response"
-
-    # Keywords or patterns for each section
-    if any(word in content_lower for word in ["welcome", "cnn", "abc", "candidates", "rules"]):
-        return "Introduction"
-    elif any(word in content_lower for word in ["?", "question", "follow-up"]):
-        return "Question"
-    elif any(word in content_lower for word in ["response", "economy", "country", "tax", "taxes", "in response", "answer", "reply", "thanks"]):
-        return "Response"
-    elif any(word in content_lower for word in ["however", "disagree", "counter"]):
-        return "Rebuttal"
-    elif any(word in content_lower for word in ["additionally", "furthermore", "follow up"]):
-        return "Follow-up"
-    elif any(word in content_lower for word in ["conclusion", "finally", "closing statement"]):
-        return "Closing Statement"
-    elif any(word in content_lower for word in ["thank you"]):
-        return "Outro"
-    else:
-        return "Uncategorized"
 
 # Function to create a color block for a list of items (words, phrases)
 def create_color_block(items, colors):
@@ -121,6 +97,7 @@ def calculate_speaking_time(selected_turn):
 
     # Return formatted speaking time (in minutes and seconds if >= 60s, otherwise just seconds)
     return format_speaking_time(speaking_time)
+
 
 def display_supporting_quote(value, default_message="No supporting quote from the transcript"):
     if isinstance(value, list) and len(value) == 0:
@@ -535,7 +512,7 @@ def analyze_biases_and_fallacies(selected_turn):
         for fallacy in fallacies_expl:
             fallacy_analysis += f"\n\n- {fallacy} This suggests that the speaker's arguments related to **{cleaned_topics}** may have logical inconsistencies, potentially weakening the argument."
     else:
-        fallacy_analysis = f"Analysis: No fallacies detected for the topic of **{cleaned_topics}."
+        fallacy_analysis = f"Analysis: No fallacies detected for the topic of **{cleaned_topics}**."
 
     return bias_analysis, fallacy_analysis
 
@@ -899,15 +876,14 @@ def show():
     st.write(f"### Speaker: {speaker}")
 
     speaking_time = calculate_speaking_time(selected_turn)
-    st.write(f"**Speaking Time:** {speaking_time}")
+    st.write(f"**Speaking Time for Turn {turn_number_display}:** {speaking_time}")
+
 
     # Split content into paragraphs
     paragraphs = split_into_paragraphs(content)
 
-    # Categorize the content if it's Introduction, Questions, Responses, Rebuttals, Follow-ups, Closing Statements, Outro
-    section = categorize_section(content)
-
-    st.write(f"### Section: {section}")
+    phase = selected_turn.get('Phase', 'Unknown Phase')
+    st.write(f"### Phase: {phase}")
 
     # Display content in paragraphs
     st.write("### Content:")
