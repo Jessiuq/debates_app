@@ -6,6 +6,14 @@ from nltk import Tree
 import spacy
 import benepar
 
+# Load the pickle file
+pickle_file_path = 'debate_analysis_data0-30WithRef.pkl'
+with open(pickle_file_path, 'rb') as file:
+    data = pickle.load(file)
+
+# Convert the data to a DataFrame (assuming it's compatible)
+df = pd.DataFrame(data)
+
 # Load the Spacy model with benepar
 nlp = spacy.load("en_core_web_md")
 nlp.add_pipe("benepar", config={"model": "benepar_en3"})
@@ -150,13 +158,6 @@ def display_syntactic_table(tree_str):
     st.write("##### Syntactic Categories and Phrases")
     st.dataframe(df)
 
-# Load the pickle file
-pickle_file_path = r'C:\Users\jesei\PycharmProjects\pythonProject\debate_analysis_data0-30WithRef.pkl'
-with open(pickle_file_path, 'rb') as file:
-    data = pickle.load(file)
-
-# Convert the data to a DataFrame (assuming it's compatible)
-df = pd.DataFrame(data)
 
 # Define topic mapping
 topic_mapping = {
