@@ -6,3 +6,4 @@ nltk==3.8.1
 spacy==3.7.5
 benepar==0.2.0
 streamlit-navigation-bar==3.3.0
+en-core-web-md @ https://github.com/explosion/spacy-models/releases/download/en_core_web_md-3.7.0/en_core_web_md-3.7.0.tar.gz
