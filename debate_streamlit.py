@@ -512,7 +512,7 @@ def analyze_biases_and_fallacies(selected_turn):
 # Function to calculate averages for ethos, pathos, and logos for a specific turn
 def calculate_turn_averages(turn_data):
     # Ethos columns
-    ethos_columns = ['epl_ethos_authority', 'epl_ethos_trust', 'epl_ethos_credibility', 'epl_ethos_power']
+    ethos_columns = ['epl_ethos_authority', 'epl_ethos_trust', 'epl_ethos_credibility', 'epl_ethos_power', 'epl_ethos_reliability']
     ethos_avg = turn_data[ethos_columns].mean()
 
     # Pathos columns
