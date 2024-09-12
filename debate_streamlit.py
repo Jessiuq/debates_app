@@ -74,30 +74,6 @@ def get_turns_by_speaker(df, current_turn, speaker):
     return turns, word_counts, sentence_counts
 
 
-def format_speaking_time(speaking_time):
-    # Convert seconds to minutes and seconds
-    minutes = speaking_time // 60
-    seconds = speaking_time % 60
-
-    # Return formatted string in "M:SS" format, ensuring seconds are two digits
-    return f"{int(minutes)}:{int(seconds):02d}"
-
-
-def calculate_speaking_time(selected_turn):
-    # Get start and end times
-    start_time = selected_turn.get('startTime', 0)
-    end_time = selected_turn.get('endTime', 0)
-
-    # Calculate speaking time in seconds
-    speaking_time = end_time - start_time
-
-    # Ensure speaking time is non-negative
-    if speaking_time < 0:
-        speaking_time = 0
-
-    # Return formatted speaking time (in minutes and seconds if >= 60s, otherwise just seconds)
-    return format_speaking_time(speaking_time)
-
 
 def display_supporting_quote(value, default_message="No supporting quote from the transcript"):
     if isinstance(value, list) and len(value) == 0:
@@ -261,6 +237,21 @@ def gather_impacted_groups(selected_turn):
 
     return data
 
+
+def display_speaking_time_for_turn(data, turn_number_display):
+    # Filter the data for the specific turn
+    specific_turn_data = data[data['turn'] == turn_number_display]
+
+    if not specific_turn_data.empty:
+        # Extract the speaking time and cumulative speaking time for that turn
+        speaking_time = specific_turn_data['speaking_time_per_turn'].values[0]
+        speaking_time_speaker = specific_turn_data['speaking_time_current_previous_speaker'].values[0]
+
+        # Display the speaking times
+        st.write(f"**Speaking Time for Turn {turn_number_display}:** {speaking_time}")
+        st.write(f"**Speaking Time up to Turn {turn_number_display}:** {speaking_time_speaker}")
+    else:
+        st.write(f"Turn {turn_number_display} not found.")
 
 # Function to create sunburst for claims/arguments and impacted groups
 def create_sunburst(data, title):
@@ -504,7 +495,7 @@ def analyze_biases_and_fallacies(selected_turn):
         for bias in bias_expl:
             bias_analysis += f"\n\n- {bias} This suggests that the speaker's reasoning related to **{cleaned_topics}** may have been influenced by cognitive shortcuts, leading to potential distortions in judgment."
     else:
-        bias_analysis = f"No biases detected for the topic of **{cleaned_topics}**."
+        bias_analysis = f"Analysis: No explanation provided."
 
     # Analyze fallacies
     if fallacies_expl:
@@ -512,7 +503,7 @@ def analyze_biases_and_fallacies(selected_turn):
         for fallacy in fallacies_expl:
             fallacy_analysis += f"\n\n- {fallacy} This suggests that the speaker's arguments related to **{cleaned_topics}** may have logical inconsistencies, potentially weakening the argument."
     else:
-        fallacy_analysis = f"Analysis: No fallacies detected for the topic of **{cleaned_topics}**."
+        fallacy_analysis = f"Analysis: No explanation provided."
 
     return bias_analysis, fallacy_analysis
 
@@ -829,8 +820,9 @@ def show():
     st.write('### Rhetorical Weight')
 
     # Slider for selecting the turn number
-    turn_number_display = st.slider('Select a Turn Number:', min_value=1, max_value=len(df), step=1)
+    # turn_number_display = st.slider('Select a Turn Number:', min_value=1, max_value=len(df), step=1)
 
+    turn_number_display = int(st.query_params["turn"])
     # Extract turn-specific data
     turn_number = turn_number_display - 1
     selected_turn = df.iloc[turn_number]
@@ -875,9 +867,7 @@ def show():
     st.write(f"### Turn {turn_number_display}")
     st.write(f"### Speaker: {speaker}")
 
-    speaking_time = calculate_speaking_time(selected_turn)
-    st.write(f"**Speaking Time for Turn {turn_number_display}:** {speaking_time}")
-
+    display_speaking_time_for_turn(data, turn_number_display)
 
     # Split content into paragraphs
     paragraphs = split_into_paragraphs(content)
